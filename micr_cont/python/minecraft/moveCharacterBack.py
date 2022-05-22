@@ -1,15 +1,12 @@
-import pydirectinput
-
-import time
+from keyControlClass import KeyControl
 
 ################################
 sleep_time = 0.135
 ################################
 
-def moveCharacterBack():
-    pydirectinput.keyDown('s')
-    time.sleep(sleep_time)
-    pydirectinput.keyUp('s')
+class CharacterBack(KeyControl):
+    def __init__(self) -> None:
+        super().__init__(key='s', sleep_time=sleep_time)
 
 if __name__ == '__main__':
-    moveCharacterBack()
+    CharacterBack().push()
