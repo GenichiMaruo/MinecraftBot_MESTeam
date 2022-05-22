@@ -14,13 +14,10 @@ import moveCharacterBack
 import moveCharacterLeft
 import moveCharacterRight
 import setTime
-import detectZombie2
 
 init.init()
-for i in range(1):
-    print(i) 
-    moveCameraLeft.moveCameraLeft()
+for i in range(36):
+    print(i)
+    moveCameraLeft.move_camera_left()
 print("OK")
-for i in range(100):
-    detectZombie2.getScreenImage()
 init.init()
