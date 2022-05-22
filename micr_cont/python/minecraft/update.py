@@ -3,7 +3,7 @@ import zipfile
 import os
 
 def update():
-    url = 'https://room404.is.oit.ac.jp/minecraft/python.zip'
+    url = 'https://g400-59.is.oit.ac.jp/minecraft/python.zip'
     with urllib.request.urlopen(url) as u:
         with open('python.zip', 'bw') as o:
             o.write(u.read())
