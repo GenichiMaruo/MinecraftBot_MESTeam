@@ -12,13 +12,21 @@
 pid_t Ppid;
 pid_t Kpid;
 int rk=1;
+IntVec camera_direction = {0};
+IntVec character_direction = {0};
 
 void attackLeft(void){
-    char com[128] = "python/python.exe python/minecraft/clickLeft.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:attackLeft\n");
-        exit(1);
+    char com[128] = "python/minecraft/clickLeft.py";
+    pid_t c_pid = fork();
+    if (c_pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    } else if (c_pid == 0) {
+        int f = execl("python/python.exe" , "python/python.exe" ,com , NULL);
+        if(f != 0 && WEXITSTATUS(f) != 0 ){
+            printf("error:attackLeft\n");
+            exit(1);
+        }
     }
 }
 void attackRight(void){
@@ -29,37 +37,31 @@ void attackRight(void){
         exit(1);
     }
 }
+
 void moveForward(void){
-    char com[128] = "python/python.exe python/minecraft/moveCharacterFowerd.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:moveForward\n");
-        exit(1);
-    }
+    character_direction.x = 1;
+    keyControl(camera_direction, character_direction);
 }
 void moveLeft(void){
-    char com[128] = "python/python.exe python/minecraft/moveCharacterLeft.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:moveLeft\n");
-        exit(1);
-    }
+    character_direction.y = -1;
+    keyControl(camera_direction, character_direction);
 }
 void moveRight(void){
-    char com[128] = "python/python.exe python/minecraft/moveCharacterRight.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:moveRight\n");
-        exit(1);
-    }
+    character_direction.y = 1;
+    keyControl(camera_direction, character_direction);
 }
 void moveBack(void){
-    char com[128] = "python/python.exe python/minecraft/moveCharacterBack.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:moveBack\n");
-        exit(1);
-    }
+    character_direction.x = -1;
+    keyControl(camera_direction, character_direction);
+}
+void moveJump(void){
+    //未実装
+    keyControl(camera_direction, character_direction);
+}
+void moveReset(void){
+    character_direction.x = 0;
+    character_direction.y = 0;
+    keyControl(camera_direction, character_direction);
 }
 
 
@@ -118,36 +120,33 @@ void cameraPos(void){
 }
 
 void cameraDown(void){
-    char com[128] = "python/python.exe python/minecraft/moveCameraDown.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:cameraDown\n");
-        exit(1);
-    }
+    camera_direction.y = -1;
+    keyControl(camera_direction, character_direction);
 }
 void cameraLeft(void){
-    char com[128] = "python/python.exe python/minecraft/moveCameraLeft.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:cameraLeft\n");
-        exit(1);
-    }
+    camera_direction.x = -1;
+    keyControl(camera_direction, character_direction);
 }
 void cameraRight(void){
-    char com[128] = "python/python.exe python/minecraft/moveCameraRight.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:cameraRight\n");
-        exit(1);
-    }
+    camera_direction.x = 1;
+    keyControl(camera_direction, character_direction);
 }
 void cameraUp(void){
-    char com[128] = "python/python.exe python/minecraft/moveCameraUp.py";
-    int f = system(com);
-    if(f != 0 && WEXITSTATUS(f) != 0 ){
-        printf("error:cameraUp\n");
-        exit(1);
-    }
+    camera_direction.y = 1;
+    keyControl(camera_direction, character_direction);
+}
+void cameraReset(void){
+    camera_direction.x = 0;
+    camera_direction.y = 0;
+    keyControl(camera_direction, character_direction);
+}
+void cameraResetVertical(void){
+    camera_direction.y = 0;
+    keyControl(camera_direction, character_direction);
+}
+void cameraResetHorizontal(void){
+    camera_direction.x = 0;
+    keyControl(camera_direction, character_direction);
 }
 
 void pushKey(char* key){
@@ -186,45 +185,39 @@ int kbhit(void){
     return 0;
 }
 
-int detectZombie(void){
+Buf detectZombie(void){
     FILE	*fp;
 	char	fname[] = "tmp.txt";
-    int i,ibuf=0,t=1;
+    int tmp = 0;
+    double d_tmp = 0;
+    Buf buf = {0};
 
 	if ( (fp=fopen(fname,"r")) ==NULL) {
 		printf("error:detectZombie\n");
 		exit(1);
 	}
-	char buf[256];
-	fgets(buf, sizeof(buf), fp);
+	fscanf(fp, "%d", &tmp);
+    buf.vec.x = tmp / 10.0;
+    fscanf(fp, "%d", &tmp);
+    buf.vec.y = tmp / 10.0;
+    fscanf(fp, "%d", &tmp);
+    buf.size = tmp;
+    fscanf(fp, "%lf", &d_tmp);
+    buf.white = d_tmp;
 	(void) fclose(fp);
 
-    for(i=0;i<7;i++){
-        ibuf = ibuf + ((buf[6-i] - '0') * t );
-        t = t * 10;
-    }
-
-    return ibuf;
+    return buf;
 }
-
-int detectZombie2(void){
-    FILE	*fp;
-	char	fname[] = "tmp2.txt";
-    int i,ibuf=0,t=1;
-
-	if ( (fp=fopen(fname,"r")) ==NULL) {
-		printf("error:detectZombie\n");
+void keyControl(IntVec camera, IntVec character){
+    FILE *fp;
+    char fname[] = "control.txt";
+    if ( (fp=fopen(fname,"w")) ==NULL) {
+		printf("error:keyControl\n");
 		exit(1);
 	}
-	char buf[256];
-	fgets(buf, sizeof(buf), fp);
+    fprintf(fp, "%d\n%d\n%d\n%d\n", camera.x, camera.y, character.x, character.y);
 	(void) fclose(fp);
-
-    ibuf = atoi(buf);
-
-    return ibuf;
 }
-
 
 void killPython(void){
     int ret1,ret2;
@@ -247,7 +240,7 @@ void *exeDetectZombie(void *args){
 }
 
 void *isInterrupt(void *args){
-    while(rk){
+    while(1){
         if (GetKeyState(VK_F12) < 0 ){
             fprintf(stderr , "終了コード送信\n" );
             killPython();
@@ -259,17 +252,17 @@ void *isInterrupt(void *args){
 }
 
 void exePython(void){
-    char com[128] = "python/python.exe python/minecraft/detectZombie.py";
+    char com[128] = "python/python.exe python/minecraft/aiDetector.py";
 
     pthread_t key;
     int ret;
-
+    keyControl(camera_direction, character_direction); //ファイルのリセット
     Ppid = fork ();
     if (-1 == Ppid){
         err (EXIT_FAILURE, "can not fork");
         exit(-1);
     }else if (0 == Ppid){
-        int f = execl("python/python.exe" , "python/python.exe" ,"python/minecraft/detectZombie.py" , NULL);
+        int f = execl("python/python.exe" , "python/python.exe" ,"python/minecraft/aiDetector.py" , NULL);
         if(f != 0 && WEXITSTATUS(f) != 0 ){
             printf("error:exePython\n");
             exit(1);
@@ -281,7 +274,7 @@ void exePython(void){
         err (EXIT_FAILURE, "can not fork");
         exit(-1);
     }else if (0 == Kpid){
-        int f = execl("python/python.exe" , "python/python.exe" ,"python/minecraft/detectZombie2.py" , NULL);
+        int f = execl("python/python.exe" , "python/python.exe" ,"python/minecraft/keyControl.py" , NULL);
         if(f != 0 && WEXITSTATUS(f) != 0 ){
             printf("error:exePython\n");
             exit(1);
