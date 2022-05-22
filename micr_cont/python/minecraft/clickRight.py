@@ -6,10 +6,10 @@ import time
 sleep_time = 1.50
 ################################
 
-def clickLeft():
+def click_left():
     pydirectinput.mouseDown(button="right")
     time.sleep(sleep_time)
     pydirectinput.mouseUp(button="right")
 
 if __name__ == '__main__':
-    clickLeft()
+    click_left()
